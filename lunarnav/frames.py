@@ -72,10 +72,11 @@ def iau_moon_angles(jd):
 
 
 def R_icrf_to_equator(jd):
-    """ICRF -> inertial frame whose Z is the lunar pole of date, X on the ICRF-equator node.
+    """ICRF -> inertial frame whose Z is the IAU lunar pole of date, X on the ICRF-equator node.
 
-    The lunar equator is the natural reference plane for inclination of a lunar orbit,
-    so orbit elements in this package are defined in this frame.
+    Optional reference for orbit elements (the default is ``R_icrf_to_orbit_plane``). The
+    IAU pole carries the forced-libration terms, so this frame wobbles by ~0.01 deg/day;
+    freeze it at one epoch when measuring secular element rates.
     """
     alpha0, delta0, _ = iau_moon_angles(jd)
     return rot_x(np.pi / 2 - delta0) @ rot_z(np.pi / 2 + alpha0)
@@ -84,10 +85,13 @@ def R_icrf_to_equator(jd):
 def R_icrf_to_orbit_plane(jd):
     """ICRF -> inertial frame whose Z is the normal of the mean Earth-Moon orbit plane.
 
-    The plane is inclined 5.145 deg to the ecliptic with its node regressing at the rate of
-    the IAU argument E1 (18.6 yr). Third-body (Earth) perturbation theory measures a lunar
-    orbit's inclination from this plane, so frozen-orbit design uses it as the reference.
-    Mean-element model only (node referred to J2000 ecliptic, ~0.4 deg error by 2100).
+    The plane is inclined 5.145 deg to the J2000 ecliptic with its ascending node at the IAU
+    argument E1. E1 is the lunar mean node referred to the fixed J2000 equinox: its rate
+    (-1935.54 deg/cy) is Meeus' node-of-date rate (-1934.14 deg/cy) minus the 1.40 deg/cy
+    general precession. Third-body (Earth) perturbation theory measures a lunar orbit's
+    inclination from this plane, so frozen-orbit design uses it as the reference.
+    Mean plane only: against DE440 the mean normal agrees to 0.02 deg, and the osculating
+    plane departs by up to 0.18 deg (the 173-day inclination oscillation).
     """
     node = np.radians(_E_EPOCH[0] + _E_RATE[0] * float(centuries_since_j2000(jd)))
     return rot_x(INCL_LUNAR_ORBIT) @ rot_z(node) @ rot_x(OBLIQUITY_J2000)

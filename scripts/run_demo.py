@@ -62,35 +62,38 @@ def fig_frames():
         lat[k], lon[k] = la, lo
     lon, lat = np.degrees(lon), np.degrees(lat)
 
-    fig, (a, b) = plt.subplots(1, 2, figsize=(11, 4.2), gridspec_kw={"width_ratios": [1, 1.25]})
+    fig, (a, b) = plt.subplots(1, 2, figsize=(11.5, 4.4), gridspec_kw={"width_ratios": [1, 1.3], "wspace": 0.3})
     a.plot(lon, lat, lw=0.35, color=BLUE, alpha=0.8)
     a.plot(0, 0, "+", color=ORANGE, ms=14, mew=2, label="mean Earth direction (ME +X)")
     a.set_xlabel("sub-Earth selenographic longitude [deg]")
     a.set_ylabel("sub-Earth latitude [deg]")
-    a.set_title("Optical libration seen in the ME frame (2 years)")
+    a.set_title("Earth libration in the ME frame (2 yr)")
     a.set_aspect("equal")
-    a.legend(loc="upper center", bbox_to_anchor=(0.5, -0.17), fontsize=8)
-    a.text(0.02, 0.97, f"max |lon| {np.abs(lon).max():.1f}°  max |lat| {np.abs(lat).max():.1f}°",
-           transform=a.transAxes, va="top", fontsize=8.5, color=INK2)
+    a.set_xlim(-10, 10); a.set_ylim(-9, 9)
+    a.legend(loc="upper center", bbox_to_anchor=(0.5, -0.15), fontsize=8, ncol=2,
+             title=f"max |lon| {np.abs(lon).max():.1f}°, max |lat| {np.abs(lat).max():.1f}°",
+             title_fontsize=8)
 
-    # displacement of a point when its ME coordinates are reinterpreted as PA coordinates
-    rot = R_pa_to_me()                      # v_ME = rot @ v_PA ; same label, different frame
-    la_g, lo_g = np.meshgrid(np.radians(np.arange(-75, 76, 25)), np.radians(np.arange(-150, 151, 30)))
+    # A point's PA coordinates u, misread as ME coordinates, land at u in ME; the point is really
+    # at rot @ u. Arrows go from the misread location to the true one, in local east/north metres.
+    rot = R_pa_to_me()                      # v_ME = rot @ v_PA
+    la_g, lo_g = np.meshgrid(np.radians(np.arange(-60, 61, 30)), np.radians(np.arange(-150, 151, 30)))
     la_g, lo_g = la_g.ravel(), lo_g.ravel()
     u = latlon_to_unit(la_g, lo_g)
-    d = (u @ rot.T - u) * C.R_MEAN * 1e3    # metres: ME position of the same PA-labelled point
+    d = (u @ rot.T - u) * C.R_MEAN * 1e3    # metres, ME components
     east = np.array([enu_basis(x, y)[0] @ dd for x, y, dd in zip(la_g, lo_g, d)])
     north = np.array([enu_basis(x, y)[1] @ dd for x, y, dd in zip(la_g, lo_g, d)])
-    q = b.quiver(np.degrees(lo_g), np.degrees(la_g), east, north, np.hypot(east, north), cmap="Blues",
-                 angles="xy", scale_units="xy", scale=45.0, width=0.004, clim=(0, 900))
-    b.quiverkey(q, 0.9, -0.2, 450, "450 m", labelpos="E", coordinates="axes")
+    # angles="uv": arrow direction is the true local compass direction, not distorted by
+    # the unequal degree scales of the map axes.
+    q = b.quiver(np.degrees(lo_g), np.degrees(la_g), east, north, color=BLUE, angles="uv",
+                 scale_units="inches", scale=2400.0, width=0.0045, pivot="middle")
+    b.quiverkey(q, 0.82, -0.17, 500, "500 m", labelpos="E", coordinates="axes", fontproperties={"size": 8})
     b.set_xlim(-180, 180)
-    b.set_ylim(-90, 90)
-    b.set_xlabel("longitude [deg]")
+    b.set_ylim(-80, 80)
+    b.set_xlabel("selenographic longitude [deg]")
     b.set_ylabel("latitude [deg]")
-    b.set_title("PA vs ME: shift of a surface point (DE440 offset)")
-    b.text(0.02, 0.97, f"rotation {np.degrees(np.arccos((np.trace(rot) - 1) / 2)):.4f}°, "
-           f"max {np.hypot(east, north).max():.0f} m", transform=b.transAxes, va="top", fontsize=8.5, color=INK2)
+    angle = np.degrees(np.arccos((np.trace(rot) - 1) / 2))
+    b.set_title(f"PA vs ME (DE440): {angle:.4f}°, up to {np.hypot(east, north).max():.0f} m")
     save(fig, "frames.png")
     return dict(lon_lib_max_deg=float(np.abs(lon).max()), lat_lib_max_deg=float(np.abs(lat).max()),
                 lon_mean_deg=float(lon.mean()), lat_mean_deg=float(lat.mean()),
@@ -119,8 +122,8 @@ def fig_frozen(days=90):
     axs[1].set_ylabel("inclination [deg]")
     axs[2].set_ylabel("arg. of periapsis [deg]")
     axs[2].set_xlabel("days since 2027-01-01")
-    axs[0].legend(fontsize=8.5, loc="upper left", ncol=2)
-    axs[0].set_title("24 h ELFO, i = 55°, e = frozen value, no station-keeping")
+    axs[0].legend(fontsize=8.5, loc="lower left", ncol=2, bbox_to_anchor=(0.0, 1.0))
+    axs[0].set_title("24 h ELFO, i = 55°, e = frozen value, no station-keeping", pad=24)
     save(fig, "frozen_orbit.png")
     summ = {}
     for label, el in out.items():
@@ -133,17 +136,20 @@ def fig_frozen(days=90):
 
 
 # --------------------------------------------------------------------------- constellations
-def region_stats(lat_deg, n_vis, dops, sel):
+def region_stats(n_vis, dops, sel):
     nv, p, h = n_vis[sel], dops["pdop"][sel], dops["hdop"][sel]
-    warnings.simplefilter("ignore", RuntimeWarning)     # all-NaN slices (never 4 sats) are reported as NaN
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)  # all-NaN slice (never 4 sats) -> NaN
+        median_pdop, p95 = float(np.nanmedian(p)), float(np.nanpercentile(p, 95))
+        median_hdop = float(np.nanmedian(h))
     return dict(
         users=int(sel.sum()),
         avail_4_sats_pct=float(100 * (nv >= 4).mean()),
         pdop_le_6_pct=float(100 * (p <= 6).mean()),
         pdop_le_3_pct=float(100 * (p <= 3).mean()),
-        median_pdop=float(np.nanmedian(p)),
-        p95_pdop=float(np.nanpercentile(p, 95)),
-        median_hdop=float(np.nanmedian(h)),
+        median_pdop=median_pdop,
+        p95_pdop=p95,
+        median_hdop=median_hdop,
         mean_visible=float(nv.mean()),
         min_visible=int(nv.min()),
     )
@@ -160,13 +166,15 @@ def run_constellation(const, days, step_s, users_unit, named):
 
 
 def fig_coverage(users_unit, results):
-    lat, lon = np.degrees(unit_to_latlon(users_unit))[0], np.degrees(unit_to_latlon(users_unit))[1]
+    lat, lon = np.degrees(unit_to_latlon(users_unit))
     n = len(users_unit)
     fig, axs = plt.subplots(2, 2, figsize=(11.5, 7.2))
     for row, (name, res) in enumerate(results.items()):
         _, _, _, n_vis, dops = res
         pd6 = 100 * (np.nan_to_num(dops["pdop"][:n], nan=1e9) <= 6).mean(axis=1)
-        med = np.nanmedian(dops["pdop"][:n], axis=1)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            med = np.nanmedian(dops["pdop"][:n], axis=1)
         ax = axs[row, 0]
         s = ax.scatter(lon, lat, c=pd6, s=16, cmap="Blues", vmin=-15, vmax=100, edgecolors=INK2, linewidths=0.3)
         ax.set_title(f"{name}\n% of time with PDOP ≤ 6")
@@ -203,7 +211,7 @@ def fig_southpole(results, named_index, days_shown=3):
     save(fig, "south_pole_timeseries.png")
 
 
-def fig_orbits(consts, results):
+def fig_orbits(consts):
     fig = plt.figure(figsize=(11.5, 8))
     q0 = R_icrf_to_orbit_plane(JD0)
     u = np.linspace(0, 2 * np.pi, 40); v = np.linspace(0, np.pi, 20)
@@ -211,15 +219,24 @@ def fig_orbits(consts, results):
                   C.R_MEAN * np.outer(np.ones_like(u), np.cos(v)))
     earth_dir = q0 @ (-moon_geocentric(JD0))
     earth_dir /= np.linalg.norm(earth_dir)
+    # The analysis grid (10 min) is too coarse to draw: near a 24 h ELFO's perilune the satellite
+    # sweeps ~17 deg per sample, so tracks would be drawn as straight chords. Re-propagate the
+    # drawn satellites on a 1 min grid instead (same force model and initial states).
+    t_draw = np.arange(0.0, 3 * 86400.0 + 1.0, 60.0)
     for k, (const, col) in enumerate(zip(consts, (BLUE, ORANGE))):
-        t, states, sats_me, _, _ = results[const.name]
+        n_planes = len({round(el[3], 9) for el in const.elements})
+        per_plane = const.n_sat // n_planes
+        drawn = []
+        for el in const.elements[::per_plane]:          # one satellite per plane
+            r0, v0 = elements_to_mci(el, JD0, const.reference)
+            drawn.append(propagate(r0, v0, JD0, t_draw, ForceModel()))
         ax = fig.add_subplot(2, 2, 1 + k, projection="3d")
         ax.plot_surface(sx, sy, sz, color="#cfcdc6", alpha=0.9, linewidth=0)
-        n_orbit = int(86400 / (t[1] - t[0]))
-        for s in states:
-            xyz = (q0 @ s[:n_orbit + 1, :3].T).T
+        one_day = t_draw <= 86400.0
+        xyz_all = [(q0 @ s[one_day, :3].T).T for s in drawn]
+        for xyz in xyz_all:
             ax.plot(*xyz.T, color=col, lw=0.9)
-        lim = np.abs(np.array([(q0 @ s[:n_orbit + 1, :3].T).T for s in states])).max()
+        lim = np.abs(np.array(xyz_all)).max()
         ax.quiver(0, 0, 0, *(earth_dir * lim * 0.9), color=INK, lw=1.5, arrow_length_ratio=0.08)
         ax.text(*(earth_dir * lim * 0.95), "Earth", fontsize=8)
         ax.set_title(f"{const.name}\ninertial, orbit-plane frame (1 day)")
@@ -231,14 +248,17 @@ def fig_orbits(consts, results):
         ax.view_init(elev=18, azim=-60)
 
         ax = fig.add_subplot(2, 2, 3 + k)
-        m = t <= 3 * 86400
-        lat, lon = unit_to_latlon(sats_me[0][m])
+        track_me = satellites_in_me(drawn[0][None, :, :3], JD0 + t_draw / 86400.0)[0]
+        lat, lon = unit_to_latlon(track_me)
         lon_d, lat_d = np.degrees(lon), np.degrees(lat)
         jump = np.where(np.abs(np.diff(lon_d)) > 180)[0] + 1
         lon_p, lat_p = np.insert(lon_d, jump, np.nan), np.insert(lat_d, jump, np.nan)
         ax.plot(lon_p, lat_p, color=col, lw=1.0)
+        hourly = slice(0, None, 60)
+        ax.plot(lon_d[hourly], lat_d[hourly], "o", ms=2.5, color=col, label="hourly position")
         ax.set_xlim(-180, 180); ax.set_ylim(-90, 90)
-        ax.set_title("sub-satellite track of satellite 1 in ME (3 days)")
+        ax.legend(fontsize=8, loc="lower left", bbox_to_anchor=(0.0, 1.0), borderaxespad=0.2)
+        ax.set_title("sub-satellite track of satellite 1 in ME (3 days)", pad=20)
         ax.set_xlabel("longitude [deg]"); ax.set_ylabel("latitude [deg]")
     fig.tight_layout()
     save(fig, "constellation_orbits.png")
@@ -333,16 +353,16 @@ def main():
     performance = {}
     for c in consts:
         _, _, _, n_vis, dops = results[c.name]
-        perf = {"global": region_stats(lat_all, n_vis, dops, np.arange(len(lat_all)) < args.users),
-                "south polar cap (lat <= -80)": region_stats(lat_all, n_vis, dops,
-                                                             (lat_all <= -80) & (np.arange(len(lat_all)) < args.users))}
+        grid = np.arange(len(lat_all)) < args.users
+        perf = {"global": region_stats(n_vis, dops, grid),
+                "south polar cap (lat <= -80)": region_stats(n_vis, dops, grid & (lat_all <= -80))}
         for site, idx in named_index.items():
-            perf[site] = region_stats(lat_all, n_vis, dops, np.arange(len(lat_all)) == idx)
+            perf[site] = region_stats(n_vis, dops, np.arange(len(lat_all)) == idx)
         performance[c.name] = perf
 
     fig_coverage(users, results)
     fig_southpole(results, named_index)
-    fig_orbits(consts, results)
+    fig_orbits(consts)
     spp = fig_spp(np.vstack([users, named]), results[consts[0].name], args.users, rng)
 
     out = dict(meta=dict(days=args.days, step_s=step_s, users=args.users), frames=frames, frozen=frozen,
