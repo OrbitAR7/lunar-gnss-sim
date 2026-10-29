@@ -1,0 +1,30 @@
+{
+  "moon_ephemeris": {
+    "rms_km": 230.49749527661018,
+    "max_km": 500.9870774230364,
+    "max_dir_deg": 0.07806644794724006,
+    "sun_max_dir_deg": 0.10033759209393356
+  },
+  "frames": {
+    "mine_vs_spice_IAU_MOON_max_m": 0.051778554916381836,
+    "iau_series_vs_de440_ME_max_m": 144.639234267341,
+    "iau_series_vs_de440_ME_rms_m": 81.9232783973681,
+    "mine_PA_vs_de440_PA_max_m": 144.6392389013166
+  },
+  "pa_me_offset": {
+    "my_matrix_vs_spice_max_abs_elem": 5.421010862427522e-20,
+    "transposed_vs_spice_max_abs_elem": 0.000763041951617614,
+    "shift_if_sign_wrong_m": 1750.4656313895769
+  },
+  "de440_libration": {
+    "lon_mean": -0.0028890825858424274,
+    "lat_mean": 0.0038232903901883313,
+    "lon_max": 8.071035791250088,
+    "lat_max": 6.86187587207165
+  },
+  "orbit_30d_analytic_vs_spice": {
+    "max_position_diff_km": 2.9593162930584533,
+    "at_day_10_km": 0.6188455708128646,
+    "at_day_30_km": 1.7763867094067733
+  }
+}

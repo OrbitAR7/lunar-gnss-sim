@@ -1,0 +1,206 @@
+{
+  "meta": {
+    "days": 28.0,
+    "step_s": 600.0,
+    "users": 800
+  },
+  "frames": {
+    "lon_lib_max_deg": 8.075784071233304,
+    "lat_lib_max_deg": 6.8568510231603454,
+    "lon_mean_deg": -0.020760139484652513,
+    "lat_mean_deg": -0.1291142365869546,
+    "pa_me_angle_deg": 0.028863328209199266,
+    "pa_me_max_shift_m": 875.2293360737183
+  },
+  "frozen": {
+    "orbit-plane reference (design)": {
+      "e_range": [
+        0.6276324084335169,
+        0.699499766369456
+      ],
+      "inc_range_deg": [
+        54.362367071060966,
+        56.89565252191165
+      ],
+      "argp_slope_deg_per_day": -0.025648620675529584,
+      "argp_range_deg": 7.308953869107853
+    },
+    "lunar-equator reference (naive)": {
+      "e_range": [
+        0.638053689263211,
+        0.7392392506418578
+      ],
+      "inc_range_deg": [
+        54.23196669316646,
+        62.29126662943014
+      ],
+      "argp_slope_deg_per_day": 0.13301801275852532,
+      "argp_range_deg": 14.74777642559296
+    }
+  },
+  "performance": {
+    "S-ELFO 55:12/3/1 (24 h)": {
+      "global": {
+        "users": 800,
+        "avail_4_sats_pct": 62.19858046119514,
+        "pdop_le_6_pct": 40.09282791966278,
+        "pdop_le_3_pct": 21.466836102157203,
+        "median_pdop": 4.115825320283107,
+        "p95_pdop": 26.885919644106792,
+        "median_hdop": 2.5035944068873217,
+        "mean_visible": 4.426236982395239,
+        "min_visible": 0
+      },
+      "south polar cap (lat <= -80)": {
+        "users": 6,
+        "avail_4_sats_pct": 100.0,
+        "pdop_le_6_pct": 99.97933713530044,
+        "pdop_le_3_pct": 72.24977270848831,
+        "median_pdop": 2.2209309851449435,
+        "p95_pdop": 4.342222778665487,
+        "median_hdop": 0.9475041015867656,
+        "mean_visible": 9.797958508967683,
+        "min_visible": 7
+      },
+      "south pole": {
+        "users": 1,
+        "avail_4_sats_pct": 100.0,
+        "pdop_le_6_pct": 100.0,
+        "pdop_le_3_pct": 72.72501859657822,
+        "median_pdop": 2.2044053590729495,
+        "p95_pdop": 4.364750942257454,
+        "median_hdop": 0.952830253437561,
+        "mean_visible": 9.822712620877759,
+        "min_visible": 8
+      },
+      "Malapert region": {
+        "users": 1,
+        "avail_4_sats_pct": 100.0,
+        "pdop_le_6_pct": 100.0,
+        "pdop_le_3_pct": 73.22092734936771,
+        "median_pdop": 2.1935561898368934,
+        "p95_pdop": 4.404313407416936,
+        "median_hdop": 0.9350056444015242,
+        "mean_visible": 9.816265807091495,
+        "min_visible": 8
+      },
+      "near-side equator": {
+        "users": 1,
+        "avail_4_sats_pct": 94.5945945945946,
+        "pdop_le_6_pct": 29.68013885445078,
+        "pdop_le_3_pct": 8.4056533597818,
+        "median_pdop": 8.440423820644959,
+        "p95_pdop": 52.2634202719178,
+        "median_hdop": 5.024893560471827,
+        "mean_visible": 4.582444830151252,
+        "min_visible": 2
+      },
+      "far-side equator": {
+        "users": 1,
+        "avail_4_sats_pct": 95.8343664765683,
+        "pdop_le_6_pct": 26.332754773121746,
+        "pdop_le_3_pct": 7.116290602529135,
+        "median_pdop": 8.93547431970717,
+        "p95_pdop": 49.381301096080286,
+        "median_hdop": 5.265092919533694,
+        "mean_visible": 4.605504587155964,
+        "min_visible": 2
+      },
+      "north pole": {
+        "users": 1,
+        "avail_4_sats_pct": 0.0,
+        "pdop_le_6_pct": 0.0,
+        "pdop_le_3_pct": 0.0,
+        "median_pdop": NaN,
+        "p95_pdop": NaN,
+        "median_hdop": NaN,
+        "mean_visible": 0.523679642945698,
+        "min_visible": 0
+      }
+    },
+    "CLFO 39.2:24/4/1 (12 h)": {
+      "global": {
+        "users": 800,
+        "avail_4_sats_pct": 99.9999380114059,
+        "pdop_le_6_pct": 99.4550892635755,
+        "pdop_le_3_pct": 85.70629804116042,
+        "median_pdop": 1.8750580375675594,
+        "p95_pdop": 3.783236787537099,
+        "median_hdop": 1.0379078078887303,
+        "mean_visible": 7.628290354574759,
+        "min_visible": 3
+      },
+      "south polar cap (lat <= -80)": {
+        "users": 6,
+        "avail_4_sats_pct": 100.0,
+        "pdop_le_6_pct": 92.01586908008926,
+        "pdop_le_3_pct": 12.806843540788496,
+        "median_pdop": 3.6579426056942648,
+        "p95_pdop": 6.399335659085582,
+        "median_hdop": 0.9165680356415566,
+        "mean_visible": 7.154764856599719,
+        "min_visible": 5
+      },
+      "south pole": {
+        "users": 1,
+        "avail_4_sats_pct": 100.0,
+        "pdop_le_6_pct": 82.49442102653111,
+        "pdop_le_3_pct": 3.7689065212000994,
+        "median_pdop": 3.7509157383009035,
+        "p95_pdop": 18.642728317306872,
+        "median_hdop": 0.8771805421211192,
+        "mean_visible": 7.244978923878007,
+        "min_visible": 5
+      },
+      "Malapert region": {
+        "users": 1,
+        "avail_4_sats_pct": 100.0,
+        "pdop_le_6_pct": 89.90825688073394,
+        "pdop_le_3_pct": 7.116290602529135,
+        "median_pdop": 3.759999158844337,
+        "p95_pdop": 6.544723973028098,
+        "median_hdop": 0.9019813238153332,
+        "mean_visible": 7.2122489461939,
+        "min_visible": 5
+      },
+      "near-side equator": {
+        "users": 1,
+        "avail_4_sats_pct": 100.0,
+        "pdop_le_6_pct": 100.0,
+        "pdop_le_3_pct": 99.72725018596579,
+        "median_pdop": 1.677849567686701,
+        "p95_pdop": 2.2706374943019476,
+        "median_hdop": 0.8711943115091938,
+        "mean_visible": 8.741135631043887,
+        "min_visible": 6
+      },
+      "far-side equator": {
+        "users": 1,
+        "avail_4_sats_pct": 100.0,
+        "pdop_le_6_pct": 100.0,
+        "pdop_le_3_pct": 99.7024547483263,
+        "median_pdop": 1.676835334603285,
+        "p95_pdop": 2.270190270770966,
+        "median_hdop": 0.870705652582453,
+        "mean_visible": 8.744111083560625,
+        "min_visible": 6
+      },
+      "north pole": {
+        "users": 1,
+        "avail_4_sats_pct": 100.0,
+        "pdop_le_6_pct": 83.33746590627325,
+        "pdop_le_3_pct": 3.8680882717579967,
+        "median_pdop": 3.7465251475086747,
+        "p95_pdop": 18.74973325150235,
+        "median_hdop": 0.8746615299405306,
+        "mean_visible": 7.248946193900323,
+        "min_visible": 5
+      }
+    }
+  },
+  "spp": {
+    "samples": 250,
+    "median_ratio": 0.9966785112665023,
+    "std_ratio_pct": 4.83784412695216
+  }
+}

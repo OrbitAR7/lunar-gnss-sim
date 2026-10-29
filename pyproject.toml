@@ -1,0 +1,16 @@
+[project]
+name = "lunarnav"
+version = "0.1.0"
+description = "Lunar reference frames (ME/PA) and a GNSS-like constellation simulation around the Moon"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.26", "scipy>=1.11", "matplotlib>=3.8"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+spice = ["spiceypy>=6"]
+
+[tool.setuptools]
+packages = ["lunarnav"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
