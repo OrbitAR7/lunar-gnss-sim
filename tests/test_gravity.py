@@ -30,7 +30,8 @@ def test_point_mass_limit():
 
 def test_j2_closed_form():
     cnm, snm = default_coefficients(2)
-    cnm[2, 2] = 0.0
+    cnm[2, 1:] = 0.0
+    snm[:] = 0.0
     a = harmonic_acceleration(R_TEST, cnm, snm)
     x, y, z = R_TEST
     r = np.linalg.norm(R_TEST)
@@ -52,6 +53,25 @@ def test_degree3_matches_finite_difference_of_potential():
     ])
     a = harmonic_acceleration(R_TEST, cnm, snm)
     np.testing.assert_allclose(a, grad, rtol=1e-6, atol=1e-12)
+
+
+@pytest.mark.parametrize("n,m", [(2, 0), (2, 1), (2, 2), (3, 0), (3, 1), (3, 2), (3, 3)])
+def test_normalisation_gives_unit_mean_square_on_the_sphere(n, m):
+    # Geodesy 4-pi normalisation: Pbar_nm(sin phi) cos(m lam) has mean square 1 over the sphere.
+    # Gauss-Legendre in sin(phi) and a uniform grid in longitude integrate it exactly.
+    x, w = np.polynomial.legendre.leggauss(12)
+    lam = np.linspace(0, 2 * np.pi, 16, endpoint=False)
+    pbar = C.normalisation(n, m) * (-1) ** m * lpmv(m, n, x)
+    mean_sq = np.sum(w * pbar**2) / 2 * np.mean(np.cos(m * lam) ** 2)
+    assert mean_sq == pytest.approx(1.0, rel=1e-12)
+
+
+def test_coefficients_are_grgm1200a():
+    cnm, snm = default_coefficients(3)
+    assert cnm[2, 0] == pytest.approx(-C.normalisation(2, 0) * 9.0884339347424299e-05, rel=1e-15)
+    assert C.J2 == pytest.approx(2.0322e-4, rel=1e-4)
+    assert C.C22 == pytest.approx(2.2381e-5, rel=1e-4)
+    assert abs(cnm[2, 1]) < 1e-10 and abs(snm[2, 1]) < 1e-8 and abs(snm[2, 2]) < 1e-8   # PA frame
 
 
 def test_third_body_direct_plus_indirect_on_the_earth_line():

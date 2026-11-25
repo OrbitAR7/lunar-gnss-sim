@@ -24,7 +24,7 @@ teaching/demonstration code, not a flight or mission-analysis tool; see
 
 ```bash
 pip install -e ".[dev]"                 # add -c constraints.txt for the exact tested versions
-pytest                                  # 32 tests (4 need SPICE kernels, else skipped)
+pytest                                  # 40 tests (4 need SPICE kernels, else skipped)
 PYTHONPATH=. python scripts/run_demo.py --quick    # ~1 min, 7 days, 200 users
 PYTHONPATH=. python scripts/run_demo.py            # ~4 min, 28 days, 800 users
 ```
@@ -38,7 +38,7 @@ The demo regenerates every figure in `docs/figures/` and the tables in
 |---|---|---|
 | **MCI** (ICRF-aligned, Moon-centred) | ICRF axes, origin at the Moon's centre | orbit propagation |
 | **ME**: Mean Earth / Polar Axis | +Z mean rotation axis, prime meridian through the mean Earth direction | cartography, selenographic lat/lon, user positions |
-| **PA**: Principal Axis | axes of the Moon's principal moments of inertia | gravity field (so C21 = S21 = S22 = 0) |
+| **PA**: Principal Axis | axes of the Moon's principal moments of inertia | gravity field (so C21, S21, S22 ≈ 0) |
 | **Orbit-plane** (inertial) | +Z normal to the mean Earth-Moon orbit plane | orbit elements for frozen-orbit design |
 
 * **ME** is realised with the IAU 2009 trigonometric series (pole RA/Dec and prime meridian,
@@ -59,8 +59,10 @@ The demo regenerates every figure in `docs/figures/` and the tables in
 
 Force model (all in `lunarnav/gravity.py`, `lunarnav/propagate.py`):
 
-* Lunar gravity to degree 3 in the **PA** frame (unnormalised Cunningham recursion), with
-  GRAIL-era `GM = 4902.8001 km³/s²`, `R = 1738 km`, `J2 = 203.3e-6`, `C22 = 22.4e-6`.
+* Lunar gravity to degree 3 in the **PA** frame (unnormalised Cunningham recursion), using the
+  GRAIL field **GRGM1200A** (Lemoine et al. 2014): degree 2-3 coefficients, `GM` and `R = 1738 km`
+  copied from the PDS file `gggrx_1200a_sha.tab` and converted from their normalised form in code
+  (`J2 = 2.0322e-4`, `C22 = 2.2381e-5`).
 * Earth and Sun third-body (direct + indirect terms) from analytic ephemerides.
 * DOP853 integrator, `rtol = 1e-11`.
 
@@ -118,6 +120,7 @@ sampling, and design parameters.
 | PA/ME offset magnitude | NAIF: 0.02886°, ~875 m | `test_frames.py` |
 | PA→ME matrix, IAU series, Moon ephemeris | SPICE with DE440 kernels (optional) | `test_spice.py` |
 | Spherical-harmonic acceleration | closed-form J2; finite difference of an independent Legendre-based potential (degree 3) | `test_gravity.py` |
+| Gravity coefficients | normalisation factors give unit mean square over the sphere; values equal the GRGM1200A file | `test_gravity.py` |
 | Propagator + frames | two-body closure/energy; J2 nodal and apsidal rates vs analytic theory (agree to 0.05 %) | `test_orbits.py` |
 | Frozen orbit | bounded e, i, ω over 60 days | `test_orbits.py` |
 | DOP | closed form for a symmetric 4-satellite geometry (HDOP, VDOP, TDOP) | `test_gnss.py` |
@@ -155,8 +158,10 @@ State these before anyone relies on a number from here.
   `lunarnav/ephemeris.py` is a two-method interface, so a SPICE-backed version is a drop-in.
 * **IAU series, not DE440 libration angles**: up to 145 m (82 m RMS) from DE440 ME, so
   positions in the series-based frame are good to roughly a hundred metres.
-* **Gravity field** truncated at degree 3. The degree-3 coefficients come from a secondary
-  summary table (Wikipedia, which cites the GRAIL papers), not the GRGM1200A file.
+* **Gravity field** truncated at degree 3 of GRGM1200A. That is enough for the 12-24 h
+  navigation orbits here (higher degrees fall off as (R/r)^n), not for low lunar orbit, where
+  the mascons call for a far higher degree. The file's PA frame is DE430's while the code rotates with
+  the DE440 PA/ME offset; the small difference between the two PA realisations is ignored.
 * **Frozen-orbit design** uses the first-order relation; no station-keeping, no SRP, no
   relativistic effects.
 * **GNSS side**: spherical Moon, no terrain masking, no signal power/antenna model, no
@@ -183,8 +188,10 @@ State these before anyone relies on a number from here.
 * Montenbruck & Gill (2000), *Satellite Orbits*, Springer: Cunningham recursion (3.2),
   low-precision Moon and Sun (3.3).
 * Meeus (1998), *Astronomical Algorithms*, 2nd ed., chapters 25 and 47.
-* Lunar gravity coefficients: [Gravitation of the Moon](https://en.wikipedia.org/wiki/Gravitation_of_the_Moon)
-  (summary of Konopliv+2014, Lemoine+2013, Williams+2014).
+* Lemoine et al. (2014), *GRGM900C: A degree 900 lunar gravity model from GRAIL primary and
+  extended mission data*, GRL 41, [doi:10.1002/2014GL060027](https://doi.org/10.1002/2014GL060027),
+  the reference the PDS label gives for GRGM1200A; coefficients from the GRGM1200A file on the
+  [PDS Geosciences Node](https://pds-geosciences.wustl.edu/grail/grail-l-lgrs-5-rdr-v1/grail_1001/shadr/).
 * LunaNet interoperability and NASA/ESA/JAXA lunar navigation planning documents on
   [NTRS](https://ntrs.nasa.gov/).
 
@@ -192,7 +199,7 @@ State these before anyone relies on a number from here.
 
 ```
 lunarnav/        constants, timeutil, frames, ephemeris, gravity, orbits, propagate, constellation, gnss
-tests/           32 tests (see table above)
+tests/           40 tests (see table above)
 scripts/run_demo.py   regenerates figures and docs/results.md
 scripts/spice_crosscheck.py   optional comparison with SPICE/DE440
 docs/            figures/ and results.md

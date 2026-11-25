@@ -35,4 +35,4 @@ Run: 28.0 days from 2027-01-01, 600 s step, 800 Fibonacci users + named sites, 5
 
 ## Single-point-solution consistency
 
-250 user/epoch samples: simulated RMS error ÷ (PDOP·σ) has median 0.997 and scatter 4.8 %. Sampling noise from 150 draws per sample, computed from each sample's error covariance, predicts 4.9 %. The 3.3 % that holds for a spherical error distribution is too low here: for a surface user the error ellipsoid is elongated (mostly vertical), which leaves fewer effective degrees of freedom and more scatter.
+250 user/epoch samples: simulated RMS error ÷ (PDOP·σ) has median 0.998 and scatter 4.6 %. Sampling noise from 150 draws per sample, computed from each sample's error covariance, predicts 4.9 %. The 3.3 % that holds for a spherical error distribution is too low here: for a surface user the error ellipsoid is elongated (mostly vertical), which leaves fewer effective degrees of freedom and more scatter.

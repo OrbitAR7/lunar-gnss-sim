@@ -12,7 +12,8 @@ ME  (Mean Earth / Polar Axis)
     series (the form NAIF ships as IAU_MOON in pck00011.tpc).
 PA  (Principal Axis)
     Body-fixed. Axes are the Moon's principal axes of inertia. Gravity-field
-    coefficients are defined here, so C21 = S21 = S22 = 0 and C20, C22 dominate.
+    coefficients are defined here, so C21, S21, S22 vanish (~1e-9 in GRGM1200A) and C20,
+    C22 dominate.
     PA differs from ME by a *constant* rotation of ~0.029 deg (~875 m on the surface).
 
 Rotation convention: ``R_a_to_b`` maps components in frame ``a`` to components in

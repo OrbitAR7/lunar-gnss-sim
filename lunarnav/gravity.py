@@ -10,16 +10,16 @@ from . import constants as C
 
 
 def default_coefficients(n_max=3):
-    """(Cnm, Snm) arrays of shape (n_max+1, n_max+1), unnormalised, C00 = 1."""
+    """(Cnm, Snm) arrays of shape (n_max+1, n_max+1), unnormalised, C00 = 1.
+
+    Degrees 2-3 of GRGM1200A, converted from the file's normalised values.
+    """
     cnm = np.zeros((4, 4))
     snm = np.zeros((4, 4))
     cnm[0, 0] = 1.0
-    cnm[2, 0] = -C.J2
-    cnm[2, 2] = C.C22
-    cnm[3, 0] = -C.J3
-    cnm[3, 1], snm[3, 1] = C.C31, C.S31
-    cnm[3, 2], snm[3, 2] = C.C32, C.S32
-    cnm[3, 3], snm[3, 3] = C.C33, C.S33
+    for (n, m), (cbar, sbar) in C.GRGM1200A_NORMALISED.items():
+        k = C.normalisation(n, m)
+        cnm[n, m], snm[n, m] = k * cbar, k * sbar
     return cnm[:n_max + 1, :n_max + 1], snm[:n_max + 1, :n_max + 1]
 
 
