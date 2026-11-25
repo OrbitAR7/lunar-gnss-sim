@@ -269,7 +269,7 @@ def fig_spp(users_all, res, n_users, rng, n_samples=250, draws=150, sigma_km=0.0
     _, _, sats, n_vis, dops = res
     cand = np.argwhere((n_vis[:n_users] >= 5) & (dops["pdop"][:n_users] < 25))
     pick = cand[rng.choice(len(cand), size=min(n_samples, len(cand)), replace=False)]
-    pdop, rms = [], []
+    pdop, rms, rel_var = [], [], []
     for ui, ti in pick:
         user = users_all[ui] * C.R_MEAN
         s = sats[:, ti, :]
@@ -280,6 +280,15 @@ def fig_spp(users_all, res, n_users, rng, n_samples=250, draws=150, sigma_km=0.0
                                                       x0=np.append(user, 0.0))[:3] - user) for _ in range(draws)]
         pdop.append(dops["pdop"][ui, ti])
         rms.append(np.sqrt(np.mean(np.square(errs))) / sigma_km)
+        # Sampling variance of the RMS estimate. The position error is Gaussian with covariance
+        # sigma^2 Q (Q = position block of (H^T H)^-1, eigenvalues lam), so |err|^2 is a weighted
+        # sum of chi-square(1) terms and, to first order, var(RMS / (PDOP sigma)) =
+        # sum(lam^2) / (2 N sum(lam)^2). Isotropic errors give 1/(6N), i.e. 3.3 % for N = 150;
+        # elongated error ellipsoids (the usual case, vertical >> horizontal) give more.
+        los = (sv - user) / pr[:, None]
+        h = np.hstack([-los, np.ones((len(sv), 1))])
+        lam = np.linalg.eigvalsh(np.linalg.inv(h.T @ h)[:3, :3])
+        rel_var.append(np.sum(lam**2) / (2 * draws * np.sum(lam) ** 2))
     pdop, rms = np.array(pdop), np.array(rms)
     fig, ax = plt.subplots(figsize=(5.2, 5))
     ax.scatter(pdop, rms, s=14, color=BLUE, alpha=0.7)
@@ -290,8 +299,10 @@ def fig_spp(users_all, res, n_users, rng, n_samples=250, draws=150, sigma_km=0.0
     ax.set_title("Single-point solutions vs DOP")
     ax.legend(fontsize=8.5)
     save(fig, "spp_vs_pdop.png")
-    return dict(samples=len(pdop), median_ratio=float(np.median(rms / pdop)),
-                std_ratio_pct=float(100 * np.std(rms / pdop)))
+    return dict(samples=len(pdop), draws=draws, median_ratio=float(np.median(rms / pdop)),
+                std_ratio_pct=float(100 * np.std(rms / pdop)),
+                expected_std_pct=float(100 * np.sqrt(np.mean(rel_var))),
+                isotropic_std_pct=float(100 / np.sqrt(6 * draws)))
 
 
 # --------------------------------------------------------------------------- main
@@ -319,8 +330,12 @@ def markdown(res):
                          f"{s['pdop_le_3_pct']:.1f} | {s['median_pdop']:.2f} | {s['p95_pdop']:.1f} | {s['median_hdop']:.2f} |")
     lines += ["", "## Single-point-solution consistency", "",
               f"{res['spp']['samples']} user/epoch samples: simulated RMS error ÷ (PDOP·σ) has median "
-              f"{res['spp']['median_ratio']:.3f} and scatter {res['spp']['std_ratio_pct']:.1f} % "
-              "(sampling noise alone with 150 draws is ~3.3 %; the excess is not investigated).", ""]
+              f"{res['spp']['median_ratio']:.3f} and scatter {res['spp']['std_ratio_pct']:.1f} %. "
+              f"Sampling noise from {res['spp']['draws']} draws per sample, computed from each "
+              f"sample's error covariance, predicts {res['spp']['expected_std_pct']:.1f} %. "
+              f"The {res['spp']['isotropic_std_pct']:.1f} % that holds for a spherical error "
+              "distribution is too low here: for a surface user the error ellipsoid is elongated "
+              "(mostly vertical), which leaves fewer effective degrees of freedom and more scatter.", ""]
     return "\n".join(lines)
 
 

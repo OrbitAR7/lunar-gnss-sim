@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    # SPICE cross-checks (tests/test_spice.py) skip themselves: spiceypy and the ~45 MB
+    # NAIF kernels are not installed here.
+    name: Python ${{ matrix.python }} (${{ matrix.deps }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python: "3.13"
+            deps: pinned
+          - python: "3.13"
+            deps: latest
+          - python: "3.10"
+            deps: latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install (pinned)
+        if: matrix.deps == 'pinned'
+        run: pip install -e ".[dev]" -c constraints.txt
+      - name: Install (latest)
+        if: matrix.deps == 'latest'
+        run: pip install -e ".[dev]"
+      - name: Test
+        run: pytest -v -rs
+      - name: Demo smoke test (7 days, 200 users)
+        if: matrix.deps == 'pinned'
+        run: python scripts/run_demo.py --quick
+        env:
+          PYTHONPATH: .

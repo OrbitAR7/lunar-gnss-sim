@@ -1,5 +1,7 @@
 # lunarnav: lunar reference frames and a GNSS-like constellation around the Moon
 
+[![CI](https://github.com/OrbitAR7/lunar-gnss-sim/actions/workflows/CI.yml/badge.svg)](https://github.com/OrbitAR7/lunar-gnss-sim/actions/workflows/CI.yml)
+
 A small, self-contained Python simulation of three things that sit at the base of lunar
 navigation:
 
@@ -21,7 +23,7 @@ teaching/demonstration code, not a flight or mission-analysis tool; see
 ## Quick start
 
 ```bash
-pip install -e ".[dev]"
+pip install -e ".[dev]"                 # add -c constraints.txt for the exact tested versions
 pytest                                  # 32 tests (4 need SPICE kernels, else skipped)
 PYTHONPATH=. python scripts/run_demo.py --quick    # ~1 min, 7 days, 200 users
 PYTHONPATH=. python scripts/run_demo.py            # ~4 min, 28 days, 800 users

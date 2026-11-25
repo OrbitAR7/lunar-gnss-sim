@@ -1,0 +1,7 @@
+# Exact versions the test suite and scripts/run_demo.py were last verified with (Python 3.13).
+# Reproduce that environment with:
+#   pip install -e ".[dev]" -c constraints.txt
+numpy==2.5.5
+scipy==1.18.1
+matplotlib==3.11.2
+pytest==9.2.0

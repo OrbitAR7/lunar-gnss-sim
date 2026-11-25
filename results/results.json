@@ -200,7 +200,10 @@
   },
   "spp": {
     "samples": 250,
+    "draws": 150,
     "median_ratio": 0.9966785112665023,
-    "std_ratio_pct": 4.83784412695216
+    "std_ratio_pct": 4.83784412695216,
+    "expected_std_pct": 4.868192956001126,
+    "isotropic_std_pct": 3.3333333333333335
   }
 }
